@@ -118,7 +118,7 @@
           88902802571733229619176668713819931811048770190271
           25267680276078003013678680992525463401061632866526
           36270218540497705585629946580636237993140746255962
-          240(use 'clojure.reflect 'clojure.pprint)74486908231174977792365466257246923322810917141
+          24074486908231174977792365466257246923322810917141
           91430288197103288597806669760892938638285025333403
           34413065578016127815921815005561868836468420090470
           23053081172816430487623791969842487255036638784583
@@ -243,40 +243,7 @@
 ;; Problem 018
 ;; Find the maximum total from top to bottom of the triangle below:
 
-; Yuck...
-(let [tri (->> "75
-                95 64
-                17 47 82
-                18 35 87 10
-                20 04 82 47 65
-                19 01 23 75 03 34
-                88 02 77 73 07 63 67
-                99 65 04 28 06 16 70 92
-                41 41 26 56 83 40 80 70 33
-                41 48 72 33 47 32 37 16 94 29
-                53 71 44 65 25 43 91 52 97 51 14
-                70 11 33 28 77 73 17 78 39 68 17 57
-                91 71 52 38 17 14 91 43 58 50 27 29 48
-                63 66 04 68 89 53 67 30 73 16 69 87 40 31
-                04 62 98 27 23 09 70 98 73 93 38 53 60 04 23"
-            split-lines
-            (map #(re-seq #"\d+" %))
-            (map (partial map #(Integer/valueOf %)))
-            (map (partial map-indexed vector))
-            (map-indexed vector))
-      sums (transient {})]
-  (->>
-    (reduce (fn [sums [r row]]
-              (reduce (fn [acc [c n]]
-                        (let [p1 (get acc [(dec r) (dec c)] 0)
-                              p2 (get acc [(dec r) c]       0)]
-                          (assoc! acc [r c] (+ n (max p1 p2)))))
-                      sums row))
-            sums tri)
-    persistent!
-    vals
-    (reduce max)))
-
+; problem 18
 (let [tri (->> "75
                 95 64
                 17 47 82
@@ -300,4 +267,37 @@
          parent       (first tri)]
     (if (nil? row) parent
       (recur tail (map #(+ % (apply max %2)) row (partition 2 1 parent))))))
+
+; problem 67
+(let [tri (->> (slurp "data/triangle.txt")
+            split-lines
+            reverse
+            (map #(re-seq #"\d+" %))
+            (map (partial map #(Integer/valueOf %))))]
+  (loop [[row & tail] (next tri)
+         parent       (first tri)]
+    (if (nil? row) parent
+      (recur tail (map #(+ % (apply max %2)) row (partition 2 1 parent))))))
+
+;; Problem 019
+;; How many Sundays fell on the first of the month during the twentieth century (1 Jan 1901 to 31 Dec 2000)?
+
+(let [leap-year?    (fn [y] (and (= 0 (mod y 4)) (or (pos? (mod y 100)) (= 0 (mod y 400)))))
+      feb-length    (fn [y] (if (leap-year? y) 29 28))
+      month-lengths (fn [y] [31 (feb-length y) 31 30 31 30 31 31 30 31 30 31])
+      years         (mapcat month-lengths (range 1901 2001))]
+  (->> (loop [[d & ds] years, day 366, dates []]
+         (if d (recur ds (+ d day) (conj dates day)) dates))
+       (map #(mod % 7))
+       (filter zero?)
+       count))
+
+;; Problem 020
+;; Find the sum of the digits in the number 100!
+
+(->> (range 1 101)
+     (reduce *')
+     (str)
+     (map #(- (int %) 48))
+     (reduce +))
 
