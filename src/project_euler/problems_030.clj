@@ -1,5 +1,6 @@
 (ns project-euler.problems-030
-  (:use project-euler.core))
+  (:use project-euler.core)
+  (:use [clojure.math.combinatorics :only (permutations)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 021
@@ -37,4 +38,18 @@
        (->> x-range
             (filter (fn [x] (not-any? #(abundants (- x %)) abundants)))
             (reduce +))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 024
+
+; Not needed -- we can use math.combinatorics
+#_(defn permute [digits]
+  (if (empty? digits) [()]
+    (for [d digits, tail (permute (disj digits d))]
+      (cons d tail))))
+
+(defn euler-024
+  "What is the millionth lexicographic permutation of the digits 0-9?"
+  ([] (euler-024 (apply sorted-set (range 10)) 1000000))
+  ([ds n] (->> ds permutations (drop (dec n)) first (apply str))))
 
