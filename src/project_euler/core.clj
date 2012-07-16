@@ -10,5 +10,8 @@
 
 (defn sqr [x] (* x x))
 
-(defn divisors [n] (filter #(divides? n %) (range 1 (inc (quot n 2)))))
+(defn divisors [n]
+  (let [low-divs  (filter #(divides? n %) (range 1 (zsqrt n)))
+        high-divs (map #(quot n %) (rest low-divs))]
+    (concat low-divs high-divs)))
 
