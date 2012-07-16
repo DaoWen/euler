@@ -16,3 +16,12 @@
              pairs (filter (fn [[a b]] (and (not= a b) (ds [b a]))) ds)]
         (reduce + (map first pairs)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 022
+
+(defn alpha-val [w] (reduce + (map #(- (int %) 64) w)))
+
+(defn euler-022
+  "What is the total of all the name scores in the file?"
+  ([] (euler-022 (slurp "data/names.txt")))
+  ([names] (->> names (re-seq #"\w+") (sort)
