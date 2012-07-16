@@ -24,4 +24,17 @@
 (defn euler-022
   "What is the total of all the name scores in the file?"
   ([] (euler-022 (slurp "data/names.txt")))
-  ([names] (->> names (re-seq #"\w+") (sort)
+  ([names] (->> names (re-seq #"\w+") (sort) (map alpha-val)
+                (map * (naturals)) (reduce +))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 023
+
+(defn euler-023
+  "Find the sum of all the positive integers which cannot be written as the sum of two abundant numbers."
+  [] (let [x-range   (range 1 28124)
+           abundants (set (filter #(> (reduce + (divisors %)) %) x-range))]
+       (->> x-range
+            (filter (fn [x] (not-any? #(abundants (- x %)) abundants)))
+            (reduce +))))
+
