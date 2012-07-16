@@ -53,3 +53,11 @@
   ([] (euler-024 (apply sorted-set (range 10)) 1000000))
   ([ds n] (->> ds permutations (drop (dec n)) first (apply str))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 025
+
+(defn euler-025
+  "What is the first term in the Fibonacci sequence to contain 1000 digits?"
+  ([] (euler-025 (.pow (biginteger 10) 999)))
+  ([n] (->> (fib) (map vector (naturals)) (drop-while #(> n (second %))) ffirst)))
+

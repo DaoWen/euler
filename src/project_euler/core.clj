@@ -15,3 +15,7 @@
         high-divs (map #(quot n %) (rest low-divs))]
     (concat low-divs high-divs)))
 
+(defn fib
+  ([] (fib 0 1))
+  ([x y] (lazy-seq (cons y (fib y (+' x y))))))
+
