@@ -65,26 +65,20 @@
 ;; Problem 026
 
 (defn decimal-cycle-length [n d]
-  (let [div   #(seq (.divideAndRemainder (bigdec %) (bigdec %2)))
-        tens  (iterate #(* 10 %) 1)
-        borrow (fn [x y] (some #(if (<= x (second %)) %)
-                               (map-indexed #(-> [% (* y %2)]) tens)))]
-    (loop [r n, seen {}, k 0]
-      (if-let [k0 (seen r)] (- k k0)
-        (if (zero? r) 0
-          (let [[i n] (borrow d r)
-                [_ r'] (div n d)]
-            (recur r' (assoc seen r k) (+ k i))))))))
+  (loop [n (* 10 n), seen {}, k 0]
+    (if-let [k0 (seen n)] (- k k0)
+      (if (zero? n) 0
+        (let [[q r] ((juxt quot rem) n d)]
+          (if (zero? q)
+            (recur (* 10 n) seen (inc k))
+            (recur (* 10 r) (assoc seen n k) (inc k))))))))
 
 (defn euler-026
   "Find the value of d<1000 for which 1/d contains the
    longest recurring cycle in its decimal fraction part."
   ([]  (euler-026 1000))
-  ([n] (->> (iterate inc 0M)
-            (take n) ; ds
-            (drop 2) ; don't want 1/0 or 1/1
-            (map #(decimal-cycle-length 1 %))
-            (map vector (drop 2 (range)))
+  ([n] (->> (range 2 n)
+            (map #(-> [% (decimal-cycle-length 1 %)]))
             (reduce (partial max-key second))
             ((fn [[d l]] [(/ 1 d) l])))))
 
