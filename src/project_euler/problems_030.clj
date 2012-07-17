@@ -126,7 +126,7 @@
 (defn euler-030
   "Find the sum of all the numbers that can be written as the sum of fifth powers of their digits."
   [] (let [quint  #(* % % % % %)
-           xs     (range (* 6 (quint 9)))
+           xs     (range 2 (* 6 (quint 9)))
            digits #(map chr2int (str %))]
        (->> xs
           (map #(reduce + (map quint (digits %))))
