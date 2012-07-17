@@ -82,3 +82,15 @@
             (reduce (partial max-key second))
             ((fn [[d l]] [(/ 1 d) l])))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 027
+
+(defn euler-027
+  "Find a quadratic formula that produces the maximum number of primes for consecutive values of n."
+  ([]  (euler-027 1000))
+  ([lim] (->> (for [a (range (- 1 lim) lim)
+                    b (range (- 1 lim) lim)
+                    :let [f #(+ (sqr %) (* a %) b)]]
+                [(->> (range) (map f) (take-while prime?) count) a b])
+           (reduce (partial max-key first)))))
+
