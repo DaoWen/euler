@@ -6,6 +6,8 @@
 
 (defn prime? [n] (= n (first (drop-while #(< n %) primes))))
 
+(defn chr2int [c] (- (int c) 48))
+
 (def primes
   (cons 2
     ((fn p [i n]
