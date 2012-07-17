@@ -94,3 +94,17 @@
                 [(->> (range) (map f) (take-while prime?) count) a b])
            (reduce (partial max-key first)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 028
+
+(defn corners []
+  ((fn cs [n i [k & ks]]
+     (lazy-seq
+       (cons n (cs (+ n i) (+ i k) ks))))
+    1 2 (cycle [0 0 0 2])))
+
+(defn euler-028
+  "What is the sum of both diagonals in a 1001 by 1001 spiral?"
+  ([] (euler-028 (* 1001 1001)))
+  ([n] (->> (corners) (take-while #(>= n %)) (reduce +))))
+
