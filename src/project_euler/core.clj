@@ -4,7 +4,16 @@
 
 (defn divides? [x y] (zero? (mod x y)))
 
-(defn prime? [n] (and (> n 1) (not-any? #(divides? n %) (range 2 (zsqrt n)))))
+(defn prime? [n] (= n (first (drop-while #(< n %) primes))))
+
+(def primes
+  (cons 2
+    ((fn p [i n]
+       (lazy-seq
+         (loop [n n]
+           (if (not-any? #(divides? n %) (take i primes))
+             (cons n (p (inc i) (+ 2 n)))
+             (recur (+ 2 n)))))) 1 3)))
 
 (defn naturals [] (drop 1 (range)))
 
