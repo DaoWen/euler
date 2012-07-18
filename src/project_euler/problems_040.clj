@@ -27,9 +27,8 @@
       (recur (quot n 10) (conj acc (rem n 10))))))
 
 (defn digit-triple [ds dset]
-  (let [others (sort (apply disj dset ds))]
-    (for [i (range 1 (count ds))]
-      (conj (vec (split-at i ds)) others))))
+  (let [others (seq (apply disj dset ds))]
+    (for [i [1 2]] (conj (vec (split-at i ds)) others))))
 
 (defn pandigital-product? [[x y z]]
   (let [p (* (seq2num x) (seq2num y))]
@@ -37,8 +36,8 @@
 
 (defn euler-032
   "Find the sum of all numbers that can be written as pandigital products with digits 1-9."
-  [] (let [ds (range 1 10), dset (set ds)]
-       (->> (mapcat #(combinations ds %) [4 5])
+  [] (let [ds (range 1 10), dset (into (sorted-set) ds)]
+       (->> (combinations ds 5)
             (mapcat permutations)
             (mapcat #(digit-triple % dset))
             (keep pandigital-product?)
