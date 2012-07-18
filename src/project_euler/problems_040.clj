@@ -1,5 +1,6 @@
 (ns project-euler.problems-040
   (:use project-euler.core)
+  (:use [clojure.set :only (intersection)])
   (:use [clojure.math.combinatorics :only (permutations combinations)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,7 +29,7 @@
 
 (defn digit-triple [ds dset]
   (let [others (seq (apply disj dset ds))]
-    (for [i [1 2]] (conj (vec (split-at i ds)) others))))
+    (for [i [1 2]] [(take i ds) (drop i ds) others])))
 
 (defn pandigital-product? [[x y z]]
   (let [p (* (seq2num x) (seq2num y))]
@@ -43,4 +44,18 @@
             (keep pandigital-product?)
             distinct
             (reduce +))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 033
+
+(defn euler-033 []
+  (->> (for [a (range 1 10), b (range 1 10)
+             x (range 1 10), y (range 1 10)
+             :let [ab    (+ (* 10 a) b)
+                   xy    (+ (* 10 x) y)
+                   ratio (/ ab xy)]
+             :when (and (> 1 ratio) (not= a y)
+                        (= ratio (/ a y)) (= b x))]
+         ratio)
+       (reduce *) (denominator)))
 
