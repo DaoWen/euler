@@ -49,13 +49,12 @@
 ;; Problem 033
 
 (defn euler-033 []
-  (->> (for [a (range 1 10), b (range 1 10)
-             x (range 1 10), y (range 1 10)
-             :let [ab    (+ (* 10 a) b)
-                   xy    (+ (* 10 x) y)
-                   ratio (/ ab xy)]
-             :when (and (> 1 ratio) (not= a y)
-                        (= ratio (/ a y)) (= b x))]
-         ratio)
-       (reduce *) (denominator)))
+  (let [xs (range 1 10)]
+    (->> (for [a xs, b xs, c xs
+               :let [ab    (+ (* 10 a) b)
+                     bc    (+ (* 10 b) c)
+                     ratio (/ ab bc)]
+               :when (and (> 1 ratio) (= ratio (/ a c)))]
+           ratio)
+         (reduce *) (denominator))))
 
