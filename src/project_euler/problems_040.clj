@@ -1,4 +1,4 @@
-(ns project-euler.problems-030
+(ns project-euler.problems-040
   (:use project-euler.core)
   (:use [clojure.math.combinatorics :only (permutations combinations)]))
 
@@ -26,20 +26,22 @@
     (if (zero? n) acc
       (recur (quot n 10) (conj acc (rem n 10))))))
 
-(defn digit-triplets [ds dset]
+(defn digit-triple [ds dset]
   (let [others (sort (apply disj dset ds))]
     (for [i (range 1 (count ds))]
-      (conj (->> ds (split-at i) (map seq2num) vec) others))))
+      (conj (vec (split-at i ds)) others))))
+
+(defn pandigital-product? [[x y z]]
+  (let [p (* (seq2num x) (seq2num y))]
+    (if (= z (-> p num2seq sort)) p)))
 
 (defn euler-032
   "Find the sum of all numbers that can be written as pandigital products with digits 1-9."
   [] (let [ds (range 1 10), dset (set ds)]
        (->> (mapcat #(combinations ds %) [4 5])
             (mapcat permutations)
-            (mapcat #(digit-triplets % dset))
-            (keep (fn [[x y z]]
-                    (let [p (* x y)]
-                      (if (= z (-> p num2seq sort)) p))))
+            (mapcat #(digit-triple % dset))
+            (keep pandigital-product?)
             distinct
             (reduce +))))
 
