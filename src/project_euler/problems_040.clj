@@ -1,5 +1,6 @@
 (ns project-euler.problems-040
   (:use project-euler.core)
+  (:require [clojure.string :as string])
   (:use [clojure.set :only (intersection)])
   (:use [clojure.math.combinatorics :only (permutations combinations)]))
 
@@ -90,5 +91,7 @@
   ([] (euler-036 1000000))
   ([n] (->> (range n)
             (map (juxt str #(Long/toString % 2)))
-            (filter (partial every? #(= % (reverse %)))))))
+            (filter (partial every? #(= % (string/reverse %))))
+            (map #(Long/valueOf (first %)))
+            (reduce +))))
 
