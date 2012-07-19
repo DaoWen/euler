@@ -55,6 +55,40 @@
                      bc    (+ (* 10 b) c)
                      ratio (/ ab bc)]
                :when (and (> 1 ratio) (= ratio (/ a c)))]
-           ratio)
-         (reduce *) (denominator))))
+           ratio) (reduce *) denominator)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 034
+
+(defn euler-034
+  "Find the sum of all numbers which are equal to the sum of the factorial of their digits."
+  [] (let [f (into {} (map #(-> [% (reduce * (range 1 (inc %)))]) (range 10)))]
+       (->> (range 10 (* 7 (f 9)))
+            (keep #(if (= % (->> % num2seq (map f) (reduce +))) %))
+            (reduce +))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 035
+
+(defn cycles [xs]
+  (map-indexed (fn [n _] (concat (drop n xs) (take n xs))) xs))
+
+(defn euler-035
+  "How many circular primes are there below one million?"
+  ([] (euler-035 1000000))
+  ([n] (let [prime-set (set (take-while #(< % n) primes))
+             circle #(->> % num2seq cycles (map seq2num))]
+         (->> prime-set
+              (filter #(every? prime-set (circle %)))
+              count))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 036
+
+(defn euler-036
+  "Find the sum of all numbers, less than one million, which are palindromic in base 10 and base 2."
+  ([] (euler-036 1000000))
+  ([n] (->> (range n)
+            (map (juxt str #(Long/toString % 2)))
+            (filter (partial every? #(= % (reverse %)))))))
 
