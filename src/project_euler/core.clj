@@ -30,8 +30,26 @@
   ([] (fib 0 1))
   ([x y] (lazy-seq (cons y (fib y (+' x y))))))
 
-(defn up-to
+(defn up-to "Range from 0 to n, inclusive."
   ([z]   (up-to 0 z))
   ([a z] (up-to a z 1))
   ([a z i] (range a (inc z) i)))
+
+(defn seq2num [ds]
+  (reduce (fn [acc d] (+ (* 10 acc) d)) ds))
+
+(defn num2seq [n]
+  (loop [n n, acc ()]
+    (if (zero? n) acc
+      (recur (quot n 10) (conj acc (rem n 10))))))
+
+; http://diditwith.net/2009/01/20/YAPESProblemSevenPart2.aspx
+; http://stackoverflow.com/a/7625207/1427124
+(defn gen-primes "Generates an infinite, lazy sequence of prime numbers"
+  [] (let [reinsert (fn [table x prime] (update-in table [(+ prime x)] conj prime))]
+       (defn primes-step [table d]
+         (if-let [factors (get table d)]
+           (recur (reduce #(reinsert %1 d %2) (dissoc table d) factors) (inc d))
+           (lazy-seq (cons d (primes-step (assoc table (* d d) (list d)) (inc d))))))
+       (primes-step {} 2)))
 

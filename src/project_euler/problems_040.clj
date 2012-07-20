@@ -20,14 +20,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 032
 
-(defn seq2num [ds]
-  (reduce (fn [acc d] (+ (* 10 acc) d)) ds))
-
-(defn num2seq [n]
-  (loop [n n, acc ()]
-    (if (zero? n) acc
-      (recur (quot n 10) (conj acc (rem n 10))))))
-
 (defn digit-triple [ds dset]
   (let [others (seq (apply disj dset ds))]
     (for [i [1 2]] [(take i ds) (drop i ds) others])))
