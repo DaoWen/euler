@@ -116,16 +116,47 @@
   "What is the largest 1 to 9 pandigital 9-digit number that can be formed
    as the concatenated product of an integer with (1,2,..., n) where n>1?"
   [] (let [dset (set (range 1 10))]
-       (->> 
-         (for [i (range 1 10000)]
-           (loop [j 1, l 9, acc []]
-             (cond (= 0 l) acc
-                   (> 0 l) nil
-                   :else (let [ds (num2seq (* i j))]
-                           (recur (inc j)
-                                  (- l (count ds))
-                                  (apply conj acc ds))))))
-         (filter #(= (set %) dset))
-         (map seq2num)
-         (reduce max))))
+       (->> (for [i (range 1 10000)]
+              (loop [j 1, l 9, acc []]
+                (cond (= 0 l) acc
+                      (> 0 l) nil
+                      :else (let [ds (num2seq (* i j))]
+                              (recur (inc j)
+                                     (- l (count ds))
+                                     (apply conj acc ds))))))
+            (filter #(= (set %) dset))
+            (map seq2num)
+            (reduce max))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 039
+
+(defn euler-039
+  "If p is the perimeter of a right angle triangle with integral length
+   sides, {a,b,c}, there are exactly three solutions for p = 120.
+   For which value of p<=1000 is the number of solutions maximised?"
+  ([] (euler-039 1000))
+  ([n] (->> (for [a (range 1 500)
+                  b (range a 500)
+                  :let [c (Math/sqrt (+ (* a a) (* b b)))]
+                  :when (== c (int c))
+                  :let [p (+ a b (int c))]
+                  :when (<= p 1000)] p)
+            frequencies
+            (reduce (partial max-key val)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 040
+
+(defn euler-040
+  "An irrational decimal fraction is created by concatenating the positive integers.
+   If d[n] represents the nth digit of the fractional part, find the value of the
+   following expression: d[1]*d[10]*d[100]*d[1000]*d[10000]*d[100000]*d[1000000]"
+  ([] (euler-040 #{1 10 100 1000 10000 100000 1000000}))
+  ([is] (let [lim (reduce max is)] 
+          (loop [[d & digits] nil, n 1, i 1, p 1]
+            (cond (nil? d)  (recur (num2seq n) (inc n) i p)
+                  (is i)    (recur digits n (inc i) (* p d))
+                  (> i lim) p
+                  :else     (recur digits n (inc i) p))))))
 
