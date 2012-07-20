@@ -108,3 +108,23 @@
             (filter #(every? prime? (truncs %)))
             (take 11)
             (reduce +))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 038
+
+(defn euler-038
+  "What is the largest 1 to 9 pandigital 9-digit number that can be formed
+   as the concatenated product of an integer with (1,2,..., n) where n>1?"
+  [] (let [ds (range 1 10), dset (set ds)]
+       (->> ds
+         (map #(->> (* i %) num2seq))
+         (for [i (range 1 10000)])
+         (map #(loop [[x & xs] %, l 9, acc []]
+                 (cond
+                   (zero? l) acc
+                   (neg? l)  nil
+                   :else (recur xs (- l (count x)) (apply conj acc x)))))
+         (filter #(= (set %) dset))
+         (map seq2num)
+         (reduce max))))
+
