@@ -95,3 +95,16 @@
             (map #(Long/valueOf (first %)))
             (reduce +))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 037
+
+(defn euler-037
+  "Find the sum of the only eleven primes that are
+   both truncatable from left to right and right to left."
+  [] (let [imap   (fn [f xs] (map #(f % xs) (range 1 (count xs))))
+           truncs #(let [xs (num2seq %)] (map seq2num (concat (imap take xs) (imap drop xs))))]
+       (->> primes
+            (drop-while #(< % 10))
+            (filter #(every? prime? (truncs %)))
+            (take 11)
+            (reduce +))))
