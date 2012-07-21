@@ -46,10 +46,11 @@
 ; http://diditwith.net/2009/01/20/YAPESProblemSevenPart2.aspx
 ; http://stackoverflow.com/a/7625207/1427124
 (defn gen-primes "Generates an infinite, lazy sequence of prime numbers"
-  [] (let [reinsert (fn [table x prime] (update-in table [(+ prime x)] conj prime))]
+  [] (let [update!  (fn [m k f & vs] (assoc! m k (apply f (m k) vs)))
+           reinsert (fn [m x p] (update! m (+ p x) conj p))]
        (defn primes-step [table d]
          (if-let [factors (get table d)]
-           (recur (reduce #(reinsert %1 d %2) (dissoc table d) factors) (inc d))
-           (lazy-seq (cons d (primes-step (assoc table (* d d) (list d)) (inc d))))))
-       (primes-step {} 2)))
+           (recur (reduce #(reinsert %1 d %2) (dissoc! table d) factors) (inc d))
+           (lazy-seq (cons d (primes-step (assoc! table (* d d) (list d)) (inc d))))))
+       (primes-step (transient {}) 2)))
 
