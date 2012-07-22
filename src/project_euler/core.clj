@@ -17,7 +17,7 @@
 
 (defn prime? [n] (= n (first (drop-while #(> n %) primes))))
 
-(defn naturals [] (drop 1 (range)))
+(defn naturals [] (iterate inc 1))
 
 (defn sqr [x] (* x x))
 
