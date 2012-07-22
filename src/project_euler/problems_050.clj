@@ -47,62 +47,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 044
 
+(defn pent-num "Return the nth pentagonal number."
+  [n] (quot (* n (dec (* 3 n))) 2))
+
+(defn pent-inv "Return the i for some pentagonal number P(i)."
+  [n] (-> n (* 24) inc Math/sqrt long inc (quot 6)))
+
 (defn pent-num? "Checks if the given integer is a pentagonal number."
-  [t] (zero? (-> t (* 24) inc Math/sqrt inc (/ 6) (rem 1))))
+  [n] (zero? (-> n (* 24) inc Math/sqrt inc (/ 6) (rem 1))))
 
-(defn pentagonals "Lazy sequence of pentagonal numbers" []
-  (map #(quot (* % (dec (* 3 %))) 2) (iterate inc 1)))
+(defn closed-pent-pairs
+  "Lazy sequence of pentagonal number pairs such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
+   Pairs are orderd from smallest to largest on P(i) then P(j). Returns [i P(i) j P(j)]"
+  [] (let [pents (map #(-> [% (pent-num %)]) (iterate inc 1))]
+       (for [[i a] pents, [j b] (take-while #(< (second %) a) pents)
+             :when (and (pent-num? (+ a b)) (pent-num? (- a b)))] [i a j b])))
 
-(defn euler-044 
-  "Find the smallest pair of pentagonal numbers such that Pi+Pj and Pi-Pj are also pentagonal."
-  [] (first (let [pents (pentagonals)]
-              (for [a pents, b (take-while #(< % a) pents)
-                    :when (and (pent-num? (+ a b)) (pent-num? (- a b)))] [a b (- a b)]))))
-
-(defn pent-diff [i j]
-  (if (> i j) (recur j i)
-    (quot (* (- j i) (dec (* 3 (+ j i)))) 2)))
-
-(defn pent-diffs []
-  (for [j (naturals), i (range 1 j)
-        :let [d (pent-diff i j)]
-        :when (pent-num? d)] [d [i j]]))
-
-(defn pent-diffs []
-  (for [j (naturals), i (range 1 j)
-        :let [d (pent-diff i j)]
-        :when (pent-num? d)
-        k (range (inc j) (- (+ j j) i))
-        :when (= d (pent-diff j k))]
-    [d [i j k]]))
+(defn pent-diff "Difference between P(j) and P(i), with j defaulting to i+1."
+  ([i] (inc (* 3 i)))
+  ([i j] (quot (* (- j i) (dec (* 3 (+ j i)))) 2)))
 
 (defn summ "Summation of x*i for i=1 thru n" [n x]
   (* x (/ (* n (inc n)) 2)))
 
-(defn pentagonal-triple-ranges
-  "Lazy sequence of all [x y] pairs such that P(i-x) P(i) P(i+y) are equidistant."
+(defn pent-triples
+  "Lazy sequence of all [x y] pairs such that P(i-x) P(i) P(i+y) are equidistant.
+   Returns [x y i d] where d is the distance of P(i) to each P(i-x) and P(i+y)."
   [] (for [x (iterate inc 2), y (range 1 x)
            :let [n (dec x), sn (summ n 3)
                  m (+ n y), sm (summ m 3)
                  d (/ (- sm (* 2 sn)) (- x y))]
            :when (and (> d 4) (= 1 (rem d 3)))
            :let [i (/ (dec d) 3)]]
-       [x y i (pent-diff i (+ i x)) (pent-diff (+ i x) (+ i x y))]))
+       [x y i (pent-diff i (+ i x))]))
 
-(time (->> (pentagonal-triple-ranges)
-           (filter (fn [[x y i d _]] (pent-num? d)))
-           (take 2)))
-
-(defn pent-i [n]
-  (some #(if (<= n (second %)) %) (map vector (naturals) (pentagonals))))
-
-(defn third [xs] (second (rest xs)))
-
-(time (->> (pentagonal-triple-ranges) (take-while (fn [[_ _ i]] (< i 2167))) (reduce (partial max-key #(% 2)))))
-
-(let [n 3
-      ps (cons 0 (pentagonals))
-      [x y i] (nth (pentagonal-triple-ranges) n)
-      [a b c] [(nth ps i) (nth ps (+ i x)) (nth ps (+ i x y))]]
-  [a b c (= (- b a) (- c b))])
+(defn euler-044
+  "Find the pentagonal numbers such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
+   Returns [P(i) P(j) P(i)-P(j)]"
+  [] (let [[j a _ b] (first (closed-pent-pairs))
+           low-bound (- j (pent-inv (- a b)))
+           possibles (take-while #(<= (first %) low-bound) (pent-triples))
+           min-4th   (partial min-key #(% 3))
+           [x y i d] (->> possibles (filter #(pent-num? (% 3))) (reduce min-4th))]
+       [a b (- a b)]))
 
