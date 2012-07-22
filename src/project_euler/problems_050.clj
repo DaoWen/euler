@@ -56,19 +56,12 @@
 (defn pent-num? "Checks if the given integer is a pentagonal number."
   [n] (zero? (-> n (* 24) inc Math/sqrt inc (/ 6) (rem 1))))
 
-(defn closed-pent-pairs
-  "Lazy sequence of pentagonal number pairs such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
-   Pairs are orderd from smallest to largest on P(i) then P(j). Returns [i P(i) j P(j)]"
-  [] (let [pents (map #(-> [% (pent-num %)]) (iterate inc 1))]
-       (for [[i a] pents, [j b] (take-while #(< (second %) a) pents)
-             :when (and (pent-num? (+ a b)) (pent-num? (- a b)))] [i a j b])))
-
 (defn pent-diff "Difference between P(j) and P(i), with j defaulting to i+1."
   ([i] (inc (* 3 i)))
   ([i j] (quot (* (- j i) (dec (* 3 (+ j i)))) 2)))
 
-(defn summ "Summation of x*i for i=1 thru n" [n x]
-  (* x (/ (* n (inc n)) 2)))
+(defn summ "Summation of x*i for i=1 thru n"
+  [n x] (* x (/ (* n (inc n)) 2)))
 
 (defn pent-triples
   "Lazy sequence of all [x y] pairs such that P(i-x) P(i) P(i+y) are equidistant.
@@ -82,6 +75,24 @@
        [x y i (pent-diff i (+ i x))]))
 
 (defn euler-044
+  "Find the pentagonal numbers such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
+   Returns [P(i) P(j) P(i)-P(j)]"
+  [] (let [dist      #(% 3)
+           pentf     (comp pent-num? dist) 
+           terms     (drop-while (complement pentf) (pent-triples))
+           ceil      (-> terms first dist pent-inv inc)
+           terms'    (->> terms (take-while #(<= (first %) ceil)) (filter pentf))
+           [x y i d] (reduce (partial min-key dist) terms')]
+       [(pent-num (+ x i)) d (pent-num i)]))
+
+(defn closed-pent-pairs
+  "Lazy sequence of pentagonal number pairs such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
+   Pairs are orderd from smallest to largest on P(i) then P(j). Returns [i P(i) j P(j)]"
+  [] (let [pents (map #(-> [% (pent-num %)]) (iterate inc 1))]
+       (for [[i a] pents, [j b] (take-while #(< (second %) a) pents)
+             :when (and (pent-num? (+ a b)) (pent-num? (- a b)))] [i a j b])))
+
+(defn euler-044-slower
   "Find the pentagonal numbers such that P(i)+P(j) and P(i)-P(j) are also pentagonal.
    Returns [P(i) P(j) P(i)-P(j)]"
   [] (let [[j a _ b] (first (closed-pent-pairs))
