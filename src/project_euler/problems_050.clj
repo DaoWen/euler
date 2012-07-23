@@ -45,7 +45,7 @@
                   (reduce +))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Problem 044
+;; Problem 045
 
 (defn pent-num "Return the nth pentagonal number."
   [n] (quot (* n (dec (* 3 n))) 2))
@@ -101,4 +101,33 @@
            min-4th   (partial min-key #(% 3))
            [x y i d] (->> possibles (filter #(pent-num? (% 3))) (reduce min-4th))]
        [a b (- a b)]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 045
+
+(defn hex-num? "Checks if the given integer is a hexagonal number."
+  [n] (== 3 (-> n (* 8) inc Math/sqrt (rem 4))))
+
+(defn euler-045
+  "After 40755, what is the next triangle number that is also pentagonal and hexagonal?"
+  ([] (euler-045 40755))
+  ([n] (->> (-> n (* 8) inc Math/sqrt inc (quot 4) long inc)
+            (iterate inc)
+            (map #(* % (dec (* 2 %))))
+            (filter pent-num?)
+            first)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 046
+
+(defn euler-046
+  "What is the smallest odd composite that cannot be
+   written as the sum of a prime and twice a square?"
+  [] (let [prime?  #(.isProbablePrime (biginteger %) 10)
+           sqrs-2x (map #(* % % 2) (iterate inc 1))]
+       (first (for [n (iterate #(+ 2 %) 9)
+                    :when (not (prime? n))
+                    :let [xs (take-while #(< % n) sqrs-2x)
+                          ys (map #(- n %) xs)]
+                     :when (not-any? prime? ys)] n))))
 
