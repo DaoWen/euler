@@ -1,6 +1,6 @@
 (ns project-euler.problems-050
   (:use project-euler.core)
-  (:use [clojure.math.combinatorics :only (permutations)]))
+  (:use [clojure.math.combinatorics :only (permutations combinations)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 041
@@ -130,4 +130,63 @@
                     :let [xs (take-while #(< % n) sqrs-2x)
                           ys (map #(- n %) xs)]
                      :when (not-any? prime? ys)] n))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 047
+
+(defn euler-047
+  "Find the first four consecutive integers to have four distinct primes factors."
+  [] (loop [n 1, i 0]
+       (let [pf-count (-> n prime-factors distinct count)]
+         (cond (= i 4) (- n 4)
+               (= pf-count 4) (recur (inc n) (inc i))
+               :else (recur (inc n) 0)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 048
+
+(defn euler-048
+  "Find the last ten digits of the series, 1^1 + 2^2 + 3^3 + ... + 1000^1000."
+  ([] (euler-048 1000 10))
+  ([n l] (let [lim (.pow (biginteger 10) (biginteger l))
+               xs  (map (comp #(.modPow % % lim) biginteger) (range 1 (inc n)))
+               sum (biginteger (reduce + xs))]
+           (.mod sum lim))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 049
+
+(defn euler-049
+  "Find arithmetic sequences, made of 3 prime terms, whose four digits are permutations of each other."
+  [] (->> (gen-primes)
+          (drop-while #(< % 1000))
+          (take-while #(< % 10000))
+          (group-by (comp set str))
+          vals
+          (filter #(>= (count %) 3))
+          (mapcat #(combinations % 3))
+          (filter (fn [xs] (apply = (map #(apply - %) (partition 2 1 xs)))))
+          doall))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 391
+
+(defn S-seq []
+  ((fn sk [k acc]
+     (lazy-seq
+       (let [digits (map chr2int (Long/toString k 2))
+             ones   (reduce + digits)
+             sum    (+ ones acc)]
+         (cons [sum ones] (sk (inc k) sum))))) 0 0))
+
+(defn M [n]
+  (let [ss  (->> (S-seq) (take-while #(<= (second %) n)) reverse)]
+    (loop [[[x k] & ss] ss, y 0, i n]
+      (cond (< i (- n)) 0 ; Fail--no forcing move
+            (neg? i)    (recur ss x (- n k)) ; Found forcing move
+            (zero? x)   y ; Success--found full move chain
+            :else       (recur ss y (- i k))))))
+
+
+(defn euler-049 [] nil)
 

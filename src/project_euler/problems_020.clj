@@ -53,10 +53,7 @@
 ; Fast, but complicated
 (let [primes    (filter prime? (range))
       triangles ((fn tri [n s] (lazy-seq (cons s (tri (inc n) (+ n s 1))))) 1 1)
-      factor    #(loop [n %, [p & q :as ps] primes, acc []]
-                   (cond (= n 1)        acc
-                         (divides? n p) (recur (quot n p) ps (conj acc p))
-                         :else          (recur n q acc)))
+      factor    prime-factors
       div-count (fn [n] (->> n factor frequencies vals (map inc) (reduce *)))]
   (->> triangles
        (drop-while #(> 500 (div-count %)))

@@ -17,6 +17,12 @@
 
 (defn prime? [n] (= n (first (drop-while #(> n %) primes))))
 
+(defn prime-factors [n]
+  (loop [n n, [p & q :as ps] primes, acc []]
+         (cond (= n 1)        acc
+               (divides? n p) (recur (quot n p) ps (conj acc p))
+               :else          (recur n q acc))))
+
 (defn naturals [] (iterate inc 1))
 
 (defn sqr [x] (* x x))
