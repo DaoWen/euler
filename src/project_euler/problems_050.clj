@@ -1,6 +1,7 @@
 (ns project-euler.problems-050
   (:use project-euler.core)
-  (:use [clojure.math.combinatorics :only (permutations combinations)]))
+  (:use [clojure.math.combinatorics :only (permutations combinations)])
+  (:import project_euler.Crunch))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 041
@@ -171,6 +172,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 391
 
+(defn count-on-bits [n]
+  (loop [n (long n), k 0]
+    (if (== 0 n) k
+      (recur (bit-and n (dec n)) (inc k)))))
+
+(defn S-k "Number of ones below 2^n"
+  [n] (->> (for [r (range 1 (inc n))]
+           (* r (nCr n r)))
+         (reduce +)))
+
 (defn S-seq []
   ((fn sk [k acc]
      (lazy-seq
@@ -179,52 +190,56 @@
              sum    (+ ones acc)]
          (cons [sum ones] (sk (inc k) sum))))) 0 0))
 
+(defmacro pow2 [n]
+  `(bit-shift-left 1 ~n))
+
+(declare M)
+
 (defn M 
   ([n] (M n n))
   ([n gap]
-    (let [ss  (->> (S-seq) (take-while #(<= (second %) gap)) reverse)
-          end (ffirst ss)]
-      (loop [[[x k] & ss] ss, y 0, i n, mvs 0]
-        (cond (zero? x)   {:start y :end end :moves mvs} ; Success--found full move chain
-              (< i (- n)) 0 ; Fail--no forcing move
-              (neg? i)    (recur ss x (- n k) (inc mvs)) ; Found forcing move
-              :else       (recur ss y (- i k) mvs))))))
+    (let [term (dec (pow2 (inc gap)))
+          end  (- (S-k (inc gap)) gap 1)]
+      (loop [t (dec term), x end, y 0, i n]
+        (cond
+          (zero? t)   {:start y :end end} ; Success--found full move chain
+          (< i (- n)) 0 ; Fail--no forcing move
+          :else       (let [k (count-on-bits t)]
+                        (if (neg? i) ; Found forcing move
+                          (recur (dec t) (- x k) x (- n k))
+                          (recur (dec t) (- x k) y (- i k)))))))))
+(defn M'
+  ([n] (M' n n))
+  ([n gap]
+    (let [term (dec (pow2 (inc gap)))
+          end  (- (S-k (inc gap)) gap 1)]
+      {:start (Crunch/crunch n (dec term) end 0 n)
+       :end end})))
 
 (def cube #(* % % %))
 
-(defn p391 [x]
-  (->>
-    (for [n (range 1 (inc x))]
-      (cond
-        (< n 18) (:start (M n))
-        (< n 50) (:start (M n 10))
-        (< n 2000) (:start (M n 15))))
-    (map cube)
-    (reduce +)))
-
-(defn count-on-bits' [n]
-  (loop [n (long n), k 0]
-    (if (== 0 n) k
-      (recur (bit-and n (dec n)) (inc k)))))
-
-; Redefine with precomputed bytes
-(let [counts (int-array 256)]
-  (doseq [i (range 0 256)]
-    (aset-int counts i (count-on-bits' i)))
-  (defn count-on-bits [n]
-    (+ (aget counts (bit-and n 0x0FF))
-       (aget counts (bit-shift-right (bit-and n 0x0FF00) 8))
-       (aget counts (bit-shift-right (bit-and n 0x0FF0000) 16))
-       (aget counts (bit-shift-right (bit-and n 0x0FF000000) 24))
-       (aget counts (bit-shift-right (bit-and n 0x0FF00000000) 32))
-       (aget counts (bit-shift-right (bit-and n 0x0FF0000000000) 40))
-       (aget counts (bit-shift-right (bit-and n 0x0FF000000000000) 48))
-       (aget counts (bit-shift-right (bit-and n 0x7F00000000000000) 56)))))
-
-(defn count-bin-ones "Number of ones below 2^n"
-  [n] (->> (for [r (range 1 (inc n))]
-           (* r (nCr n r)))
-         (reduce +)))
+(defn p391
+  ([x] (p391 x 25))
+  ([x t]
+    (->>
+      (range 1 (inc x))
+      (pmap (fn [n]
+              (cond
+                (< n t) (:start (M n))
+                (< n 2000) (:start (M n t)))))
+      doall
+      (map cube)
+      (reduce +))))
 
 (defn euler-049 [] nil)
+
+(comment
+
+(map M' (range 1 25))
+
+(map #(rem (- (S-k (inc %)) % 1) %) (range 1 25))
+
+  (map count-on-bits (range 0 30))
+
+  )
 

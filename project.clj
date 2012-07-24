@@ -3,4 +3,6 @@
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.clojure/math.numeric-tower  "0.0.1"]
                  [org.clojure/math.combinatorics  "0.0.3"]
-                 [org.apache.commons/commons-math "2.2"]])
+                 [org.apache.commons/commons-math "2.2"]]
+  :java-source-path "src-java"
+  :main project-euler.main)
