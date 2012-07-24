@@ -179,22 +179,16 @@
              sum    (+ ones acc)]
          (cons [sum ones] (sk (inc k) sum))))) 0 0))
 
-(defn M [n]
-  (let [ss  (->> (S-seq) (take-while #(<= (second %) n)) reverse)]
-    (loop [[[x k] & ss] ss, y 0, i n]
-      (cond (zero? x)   y ; Success--found full move chain
-            (< i (- n)) 0 ; Fail--no forcing move
-            (neg? i)    (recur ss x (- n k)) ; Found forcing move
-            :else       (recur ss y (- i k))))))
-
-(defn M' [n gap]
-  (let [ss  (->> (S-seq) (take-while #(<= (second %) gap)) reverse)
-        start (ffirst ss)]
-    (loop [[[x k] & ss] ss, y 0, i n, mvs 0]
-      (cond (zero? x)   {:start start :end y :moves mvs}; Success--found full move chain
-            (< i (- n)) 0 ; Fail--no forcing move
-            (neg? i)    (recur ss x (- n k) (inc mvs)) ; Found forcing move
-            :else       (recur ss y (- i k) mvs)))))
+(defn M 
+  ([n] (M n n))
+  ([n gap]
+    (let [ss  (->> (S-seq) (take-while #(<= (second %) gap)) reverse)
+          end (ffirst ss)]
+      (loop [[[x k] & ss] ss, y 0, i n, mvs 0]
+        (cond (zero? x)   {:start y :end end :moves mvs} ; Success--found full move chain
+              (< i (- n)) 0 ; Fail--no forcing move
+              (neg? i)    (recur ss x (- n k) (inc mvs)) ; Found forcing move
+              :else       (recur ss y (- i k) mvs))))))
 
 (def cube #(* % % %))
 
@@ -202,9 +196,9 @@
   (->>
     (for [n (range 1 (inc x))]
       (cond
-        (< n 18) (M n)
-        (< n 50) (:end (M' n 10))
-        (< n 2000) (:end (M' n 15))))
+        (< n 18) (:start (M n))
+        (< n 50) (:start (M n 10))
+        (< n 2000) (:start (M n 15))))
     (map cube)
     (reduce +)))
 
