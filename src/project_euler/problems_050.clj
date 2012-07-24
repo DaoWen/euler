@@ -202,5 +202,29 @@
     (map cube)
     (reduce +)))
 
+(defn count-on-bits' [n]
+  (loop [n (long n), k 0]
+    (if (== 0 n) k
+      (recur (bit-and n (dec n)) (inc k)))))
+
+; Redefine with precomputed bytes
+(let [counts (int-array 256)]
+  (doseq [i (range 0 256)]
+    (aset-int counts i (count-on-bits' i)))
+  (defn count-on-bits [n]
+    (+ (aget counts (bit-and n 0x0FF))
+       (aget counts (bit-shift-right (bit-and n 0x0FF00) 8))
+       (aget counts (bit-shift-right (bit-and n 0x0FF0000) 16))
+       (aget counts (bit-shift-right (bit-and n 0x0FF000000) 24))
+       (aget counts (bit-shift-right (bit-and n 0x0FF00000000) 32))
+       (aget counts (bit-shift-right (bit-and n 0x0FF0000000000) 40))
+       (aget counts (bit-shift-right (bit-and n 0x0FF000000000000) 48))
+       (aget counts (bit-shift-right (bit-and n 0x7F00000000000000) 56)))))
+
+(defn count-bin-ones "Number of ones below 2^n"
+  [n] (->> (for [r (range 1 (inc n))]
+           (* r (nCr n r)))
+         (reduce +)))
+
 (defn euler-049 [] nil)
 
