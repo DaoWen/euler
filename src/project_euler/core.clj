@@ -1,4 +1,7 @@
-(ns project-euler.core)
+(ns project-euler.core
+  (:import org.apache.commons.math.util.MathUtils))
+
+(defn nCr [n r] (MathUtils/binomialCoefficient n r))
 
 (defn zsqrt [n] (inc (int (Math/sqrt n))))
 
