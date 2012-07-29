@@ -178,15 +178,10 @@
   ([n] (let [prime? #(.isProbablePrime (biginteger %) 15)
              primes (gen-primes)
              top (loop [[p & ps] primes, i 0, acc 0]
-                   (if (>= acc n) i (recur ps (inc i) (+ p acc))))
-             base 2 #_(if (< n 100) 2 (-> n (quot 10) euler-050 first))]
-         (prn 'For n 'Min base 'Max top)
-         (->>
-           (for [i (range base (inc top))
-                 chain (->> primes (partition i 1) (map (partial apply +)) (take-while #(< % n)))
+                   (if (>= acc n) i (recur ps (inc i) (+ p acc))))]
+         (first
+           (for [i (range top 1 -1)
+                 chain (->> primes (partition i 1) (map #(apply + %)) (take-while #(< % n)))
                  :when (prime? chain)]
-             [i chain])
-           (reduce (partial max-key first) [1 2])))))
-
-(time (euler-050))
+             [i chain])))))
 
