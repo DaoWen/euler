@@ -170,76 +170,23 @@
           doall))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Problem 391
+;; Problem 050
 
-(defn count-on-bits [n]
-  (loop [n (long n), k 0]
-    (if (== 0 n) k
-      (recur (bit-and n (dec n)) (inc k)))))
+(defn euler-050
+  "Which prime, below one-million, can be written as the sum of the most consecutive primes?"
+  ([] (euler-050 1000000))
+  ([n] (let [prime? #(.isProbablePrime (biginteger %) 15)
+             primes (gen-primes)
+             top (loop [[p & ps] primes, i 0, acc 0]
+                   (if (>= acc n) i (recur ps (inc i) (+ p acc))))
+             base 2 #_(if (< n 100) 2 (-> n (quot 10) euler-050 first))]
+         (prn 'For n 'Min base 'Max top)
+         (->>
+           (for [i (range base (inc top))
+                 chain (->> primes (partition i 1) (map (partial apply +)) (take-while #(< % n)))
+                 :when (prime? chain)]
+             [i chain])
+           (reduce (partial max-key first) [1 2])))))
 
-(defn S-k "Number of ones below 2^n"
-  [n] (->> (for [r (range 1 (inc n))]
-           (* r (nCr n r)))
-         (reduce +)))
-
-(defn S-seq []
-  ((fn sk [k acc]
-     (lazy-seq
-       (let [digits (map chr2int (Long/toString k 2))
-             ones   (reduce + digits)
-             sum    (+ ones acc)]
-         (cons [sum ones] (sk (inc k) sum))))) 0 0))
-
-(defmacro pow2 [n]
-  `(bit-shift-left 1 ~n))
-
-(declare M)
-
-(defn M 
-  ([n] (M n n))
-  ([n gap]
-    (let [term (dec (pow2 (inc gap)))
-          end  (- (S-k (inc gap)) gap 1)]
-      (loop [t (dec term), x end, y 0, i n]
-        (cond
-          (zero? t)   {:start y :end end} ; Success--found full move chain
-          (< i (- n)) 0 ; Fail--no forcing move
-          :else       (let [k (count-on-bits t)]
-                        (if (neg? i) ; Found forcing move
-                          (recur (dec t) (- x k) x (- n k))
-                          (recur (dec t) (- x k) y (- i k)))))))))
-(defn M'
-  ([n] (M' n n))
-  ([n gap]
-    (let [term (dec (pow2 (inc gap)))
-          end  (- (S-k (inc gap)) gap 1)]
-      {:start (Crunch/crunch n (dec term) end 0 n)
-       :end end})))
-
-(def cube #(* % % %))
-
-(defn p391
-  ([x] (p391 x 25))
-  ([x t]
-    (->>
-      (range 1 (inc x))
-      (pmap (fn [n]
-              (cond
-                (< n t) (:start (M n))
-                (< n 2000) (:start (M n t)))))
-      doall
-      (map cube)
-      (reduce +))))
-
-(defn euler-049 [] nil)
-
-(comment
-
-(map M' (range 1 25))
-
-(map #(rem (- (S-k (inc %)) % 1) %) (range 1 25))
-
-  (map count-on-bits (range 0 30))
-
-  )
+(time (euler-050))
 
