@@ -20,6 +20,9 @@
 
 (defn prime? [n] (= n (first (drop-while #(> n %) primes))))
 
+; Way faster and still very accurate
+(defn prime? [n] (.isProbablePrime (biginteger n) 20))
+
 (defn prime-factors [n]
   (loop [n n, [p & q :as ps] primes, acc []]
          (cond (= n 1)        acc
