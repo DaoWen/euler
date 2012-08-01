@@ -27,3 +27,14 @@
                  :when (<= l (count s-primes))]
              [(first s-group) s-primes])))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 052
+
+(defn euler-052
+  "Find the smallest positive integer, x, such that 2x, 3x, 4x, 5x, and 6x, contain the same digits."
+  ([] (euler-052 6))
+  ([n] (first
+         (for [x (iterate inc 1)
+               :let [xs (map #(-> % (* x) str sort) (range 1 (inc n)))]
+               :when (apply = xs)] x))))
+
