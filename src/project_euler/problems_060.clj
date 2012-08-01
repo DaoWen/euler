@@ -9,20 +9,21 @@
   "Find the smallest prime which, by replacing part of the number (not necessarily
    adjacent digits) with the same digit, is part of an eight prime value family."
   ([] (euler-051 8))
-  ([l] (let [primes (->> (gen-primes) (drop-while #(< % 100)))]
+  ([l] (let [starts (set (range 0 (- 11 l)))
+             primes (->> (gen-primes) (drop-while #(< % 10)))]
          (first 
-           (for [digit-count (iterate inc 3)
-                 :let [top (Math/pow 10 (inc digit-count))
-                       bot (quot top 10)
-                       ps (->> primes (drop-while #(< % bot)) (take-while #(< % top)))
-                       ss (->> ps (map (comp vec num2seq)) (filter #(not= % (distinct %))))]
-                 [i j] (combinations (range 0 digit-count) 2)
-                 :let [dropf  #(when-not (#{i j} %) %2)
-                       ss' (filter #(= (% i) (% j)) ss)
-                       groups (group-by #(keep-indexed dropf %) ss')]
-                 group (map (fn [[_ x]] [(seq2num (first x)) (count x) i j]) groups)
-                 :when (= l (second group))]
-             group)))))
-
-(time (euler-051 7))
+           (for [s (map (comp vec num2seq) primes)
+                 :let [digit-count (count s)]
+                 stars   (range 1 digit-count)
+                 indices (combinations (range 0 digit-count) stars)
+                 :let [i (first indices)]
+                 :when (and (contains? starts (s i))
+                            (apply = (map #(s %) indices)))
+                 :let [base     (seq2num (apply assoc s (mapcat list indices (repeat 0))))
+                       powers   (map #(long (Math/pow 10 (- digit-count 1 %))) indices)
+                       s-nums   (map #(apply + base (map (partial * %) powers)) (range 1 10))
+                       s-group  (if (= i 0) s-nums (cons base s-nums))
+                       s-primes (filter prime? s-group)]
+                 :when (<= l (count s-primes))]
+             [(first s-group) s-primes])))))
 
