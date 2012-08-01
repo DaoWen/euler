@@ -97,3 +97,28 @@
                (filter pos?)
                count))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 055
+
+(defn rev-num [n]
+  (-> n num2seq reverse seq2num))
+
+(defn palindrome? [n]
+  (= n (rev-num n)))
+
+(defn euler-055
+  "How many Lychrel numbers are there below ten-thousand?"
+  ([] (euler-055 10000))
+  ([n] (count (for [i (range n)
+                :let [xs (iterate #(+' % (rev-num %)) i)]
+                :when (->> xs rest (take 50) (not-any? palindrome?))] i))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 056
+
+(defn euler-056 []
+  (reduce max
+    (for [i (range 1 100) :let [a (biginteger i)]
+          j (range 1 100) :let [b (biginteger j)]]
+      (->> (.pow a b) str (map chr2int) (reduce +)))))
+

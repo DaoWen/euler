@@ -48,7 +48,7 @@
   ([a z i] (range a (inc z) i)))
 
 (defn seq2num [ds]
-  (reduce (fn [acc d] (+ (* 10 acc) d)) ds))
+  (reduce (fn [acc d] (+ (* 10 acc) d)) 0 ds))
 
 (defn num2seq [n]
   (loop [n n, acc ()]
