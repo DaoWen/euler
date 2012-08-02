@@ -1,7 +1,8 @@
 (ns project-euler.problems-060
-  (:use project-euler.core)
-  (:use [clojure.set :only (map-invert)])
-  (:use [clojure.math.combinatorics :only (permutations combinations)]))
+  (:use [project-euler.core]
+        [project-euler.problems-030 :only (corners)]
+        [clojure.set :only (map-invert)]
+        [clojure.math.combinatorics :only (permutations combinations selections)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 051
@@ -121,4 +122,65 @@
     (for [i (range 1 100) :let [a (biginteger i)]
           j (range 1 100) :let [b (biginteger j)]]
       (->> (.pow a b) str (map chr2int) (reduce +)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 057
+
+(defn euler-057 []
+  (->> (iterate #(->> % inc (/ 1) inc) 3/2)
+       (take 1000)
+       (filter #(> (-> % numerator str count)
+                   (-> % denominator str count)))
+       count))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 058
+;; Uses "corners" function from problem 028
+
+(defn euler-058 []
+  (loop [diags (rest (corners)), ps 0, xs 1]
+    (let [[heads tail] (split-at 4 diags)
+          ps' (->> heads (filter prime?) count (+ ps))
+          xs' (+ 4 xs)
+          ratio (/ ps' (double xs'))]
+      (if (< ratio 0.1) (-> xs' dec (/ 2) inc)
+        (recur tail ps' xs')))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 059
+
+(defn euler-059 []
+  (let [chrs    (range (int \a) (inc (int \z)))
+        data    (->> "data/p059.txt" slurp (re-seq #"\d+") (map #(Long/valueOf %)))
+        words   ["an" "the" "ie" "ea" "er"]]
+    (doall (for [password (selections chrs 3)
+                 :let [res (map (comp char bit-xor) data (cycle password))
+                       sum (reduce + (map int res))
+                       ss  (.toLowerCase (apply str res))]
+                 :when (not-any? #{\~ \| \< \> \^ \% \+ \=} res)
+                 :when (not-any? #(neg? (.indexOf ss %)) words)]
+             [(apply str (take 30 res)) sum password]))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 060
+
+(defn cat-primes
+  "Groups of primes that can be concatenated to make more primes."
+  ([n] (cat-primes n 1e3))
+  ([n l] (cat-primes n l [] (cons 3 (drop 3 (gen-primes)))))
+  ([n l group primes]
+    (if (zero? n) group
+      (let [catnums #(Long/valueOf (apply str %))]
+        (loop [[p & ps] primes]
+          (if (<= p l)
+            (let [xs (mapcat #(map catnums [[% p] [p %]]) group)]
+              (if-let [g (and (every? prime? xs)
+                              (cat-primes (dec n) l (conj group p) ps))]
+                g
+                (recur ps)))))))))
+
+(defn euler-060
+  "Find a set of five primes for which any two primes
+   concatenate to produce another prime."
+  [] (cat-primes 5 1e4))
 
