@@ -43,3 +43,15 @@
 (defn euler-061 []
   (find-poly-cycle (range 3 9)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 062
+
+(defn euler-062 [x]
+  (loop [n 1, cubes (transient {})]
+    (let [n3 (* n n n)
+          k  (-> n3 str sort)
+          v  (conj (cubes k) n3)]
+      (if (= x (count v))
+        (reduce min v)
+        (recur (inc n) (assoc! cubes k v))))))
+
