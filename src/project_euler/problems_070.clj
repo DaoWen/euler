@@ -47,11 +47,18 @@
 ;; Problem 062
 
 (defn euler-062 [x]
-  (loop [n 1, cubes (transient {})]
-    (let [n3 (* n n n)
-          k  (-> n3 str sort)
-          v  (conj (cubes k) n3)]
-      (if (= x (count v))
-        (reduce min v)
-        (recur (inc n) (assoc! cubes k v))))))
+  (loop [n 1,
+         cubes (transient {}),
+         best Long/MAX_VALUE,
+         lim Long/MAX_VALUE]
+      (let [n3 (* n n n)
+            k  (-> n3 str sort)
+            v  (conj (cubes k) n3)
+            m  (assoc! cubes k v)]
+        (cond
+          (> n3 lim) best
+          (= x (count v)) (recur (inc n) m
+                                 (min best (reduce min v))
+                                 (Math/pow 10 (count k)))
+          :else (recur (inc n) m best lim)))))
 
