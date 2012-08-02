@@ -176,8 +176,7 @@
             (let [xs (mapcat #(map catnums [[% p] [p %]]) group)]
               (if-let [g (and (every? prime? xs)
                               (cat-primes (dec n) l (conj group p) ps))]
-                g
-                (recur ps)))))))))
+                g (recur ps)))))))))
 
 (defn euler-060
   "Find a set of five primes for which any two primes
