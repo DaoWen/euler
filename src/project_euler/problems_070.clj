@@ -73,3 +73,43 @@
                (take-while (fn [[n nx]] (= n (-> nx str count))))))
        (apply concat) count))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 064
+;; Reference:
+;; www.maths.surrey.ac.uk/hosted-sites/R.Knott/Fibonacci/cfINTRO.html
+;; (Especially section on square roots using algebra)
+
+(defn sqrt-cont-frac-T
+  "Period of the continued fraction for the square-root of n." [n]
+  (let [sqrt-n (Math/sqrt n)]
+    (if (zero? (rem sqrt-n 1)) 0
+      (loop [i 1, x 1, y (long sqrt-n)]
+        ; x / [ sqrt(n) - y ] ==> a + [ sqrt(n) - b ] / c
+        (let [c (/ (- n (* y y)) x)
+              a (long (/ (+ sqrt-n y) c))
+              b (- (* a c) y)]
+          (if (= 1 c) i (recur (inc i) c b)))))))
+
+(defn euler-064
+  "How many continued fractions for sqrt(N) where N<=10000 have an odd period?"
+  ([] (euler-064 10000))
+  ([n] (->> (range 2 (inc n)) (map sqrt-cont-frac-T) (filter odd?) count)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 065
+
+(defn cont-frac-e
+  "Nth term of the continued fraction of e."
+  [n] (let [ones   (repeat 1)
+            two-ks (map #(* 2 %) (iterate inc 1))
+            items  (cons 2 (interleave ones two-ks ones))]
+        ((fn term [[x & xs] i]
+           (if (= i n) x
+             (+ x (/ 1 (term xs (inc i)))))) items 1)))
+
+(defn euler-065
+  "Find the sum of digits in the numerator of the 100th
+   convergent of the continued fraction for e."
+  ([] (euler-065 100))
+  ([n] (->> n cont-frac-e numerator num2seq (reduce +))))
+
