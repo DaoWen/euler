@@ -62,3 +62,14 @@
                                  (Math/pow 10 (count k)))
           :else (recur (inc n) m best lim)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 063
+
+(defn euler-063 []
+  (->> (for [x (range 1 10)]
+          (->> (iterate inc 1)
+               (map #(-> [% (.pow (biginteger x) (biginteger %))]))
+               (drop-while (fn [[n nx]] (< n (-> nx str count))))
+               (take-while (fn [[n nx]] (= n (-> nx str count))))))
+       (apply concat) count))
+
