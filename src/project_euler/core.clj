@@ -66,3 +66,8 @@
            (lazy-seq (cons d (primes-step (assoc! table (* d d) (list d)) (inc d))))))
        (primes-step (transient {}) 2)))
 
+;; http://stackoverflow.com/a/1684988/1427124
+(defmacro time-limited [ms & body]
+  `(let [f# (future ~@body)]
+     (.get f# ~ms java.util.concurrent.TimeUnit/MILLISECONDS)))
+

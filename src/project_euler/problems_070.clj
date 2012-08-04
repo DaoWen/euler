@@ -113,3 +113,61 @@
   ([] (euler-065 100))
   ([n] (->> n cont-frac-e numerator num2seq (reduce +))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 066
+
+; Modified from p64's solution
+(defn sqrt-terms
+  "Convergents of the square-root of n" [n]
+  (let [sqrt-n (Math/sqrt n)
+        a0     (long sqrt-n)]
+    (if (not= (* a0 a0) n)
+      (loop [x 1, y a0, acc [a0]]
+        ; x / [ sqrt(n) - y ] ==> a + [ sqrt(n) - b ] / c
+        (let [c (/ (- n (* y y)) x)
+              a (long (/ (+ sqrt-n y) c))
+              b (- (* a c) y)
+              acc (conj acc a)]
+          (if (= 1 c) acc
+            (recur c b acc)))))))
+
+(sqrt-terms 7)
+
+; Modified from p65's solution
+(defn nth-sqrt-convergent
+  "Nth convergent in the continued fraction of sqrt(x)." [x n]
+  (let [[k & ks] (sqrt-terms x)
+        items    (cons k (cycle ks))
+        term     ((fn term [[x & xs] i]
+                    (if (= i n) x
+                      (+ x (/ 1 (term xs (inc i)))))) items 0)]
+    (if (integer? term)
+      [term 1]
+      ((juxt numerator denominator) term))))
+
+(nth-sqrt-convergent 7 0)
+
+(defn search-xs [d]
+  (loop [[x & xs] (iterate inc 2)
+          sqrs    {1 1}]
+    (let [xx (* x x)
+          y  (-> xx dec (/ d))]
+      (if (and (integer? y) (sqrs y)) x
+        (recur xs (assoc sqrs xx x))))))
+
+(defn euler-066
+  ([] (euler-066 1000))
+  ([n] (doall
+         (for [d (range 2 (inc n))
+               :let [x (search-xs d)]
+               :when x]
+           [d x]))))
+
+#_(time (euler-066 14))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 067 (see problem 018)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 068
+
