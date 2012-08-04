@@ -131,39 +131,33 @@
           (if (= 1 c) acc
             (recur c b acc)))))))
 
-(sqrt-terms 7)
-
 ; Modified from p65's solution
-(defn nth-sqrt-convergent
-  "Nth convergent in the continued fraction of sqrt(x)." [x n]
+(defn sqrt-convergents
+  "Nth convergent in the continued fraction of sqrt(x)." [x]
   (let [[k & ks] (sqrt-terms x)
         items    (cons k (cycle ks))
-        term     ((fn term [[x & xs] i]
-                    (if (= i n) x
-                      (+ x (/ 1 (term xs (inc i)))))) items 0)]
-    (if (integer? term)
-      [term 1]
-      ((juxt numerator denominator) term))))
-
-(nth-sqrt-convergent 7 0)
+        convs    (map #(reduce (fn [a b] (+ b (/ 1 a)))
+                               (reverse (take % items)))
+                      (iterate inc 1))
+        f1       #(-> [% 1])
+        f2       #(-> [(numerator %) (denominator %)])
+        f3       #((if (integer? %) f1 f2) %)]
+    (if (seq ks) (map f3 convs))))
 
 (defn search-xs [d]
-  (loop [[x & xs] (iterate inc 2)
-          sqrs    {1 1}]
-    (let [xx (* x x)
-          y  (-> xx dec (/ d))]
-      (if (and (integer? y) (sqrs y)) x
-        (recur xs (assoc sqrs xx x))))))
+  (first 
+    (for [[x y] (sqrt-convergents d)
+          :when (== (-> x sqr dec) (-> y sqr (* d)))]
+      x)))
 
 (defn euler-066
   ([] (euler-066 1000))
-  ([n] (doall
+  ([n] (->>
          (for [d (range 2 (inc n))
                :let [x (search-xs d)]
                :when x]
-           [d x]))))
-
-#_(time (euler-066 14))
+           [d x])
+         (reduce (partial max-key second)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 067 (see problem 018)
