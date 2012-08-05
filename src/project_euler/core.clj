@@ -67,6 +67,7 @@
        (primes-step (transient {}) 2)))
 
 ;; http://stackoverflow.com/a/1684988/1427124
+;; Should be updated with future-cancel to actually kill the thread
 (defmacro time-limited [ms & body]
   `(let [f# (future ~@body)]
      (.get f# ~ms java.util.concurrent.TimeUnit/MILLISECONDS)))

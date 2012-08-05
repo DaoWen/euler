@@ -1,5 +1,6 @@
 (ns project-euler.problems-070
-  (:use [project-euler.core]))
+  (:use [project-euler.core]
+        [clojure.math.combinatorics :only (permutations)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Problem 061
@@ -179,5 +180,31 @@
 ;; 0 5 6 ; 1 6 7 ; 2 7 8 ; 3 8 9 ; 4 9 5
 ;;
 
+(def three-gon-ring [[0 4 5] [1 5 3] [2 3 4]])
+(def five-gon-ring [[0 5 6] [1 6 7] [2 7 8] [3 8 9] [4 9 5]])
 
+(defn to-ring [xs n-gon-ring]
+  (let [xs (vec xs)]
+    (for [triple n-gon-ring]
+        (map xs triple))))
 
+(defn euler-068 []
+  (->>
+    (range 1 10)
+    permutations
+    (map #(to-ring (cons 10 %) five-gon-ring))
+    (filter (fn [triples] (apply = (map #(reduce + %) triples))))
+    (map #(->> % cycle (partition 5 1) (take 5) (reduce (partial min-key ffirst))))
+    (map #(->> % flatten (apply str) Long/valueOf))
+    (reduce max)))
+
+(defn euler-068-test "Expect 432621513" []
+  (->>
+    (range 1 7)
+    permutations
+    (filter (fn [[a b c]] (== a (min a b c))))
+    (map #(to-ring % three-gon-ring))
+    (filter (fn [triples] (apply = (map #(reduce + %) triples))))
+    (map #(->> % flatten (apply str) Long/valueOf))
+    (reduce max)))
+ 
